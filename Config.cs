@@ -6,11 +6,11 @@ namespace FDMApp
     {
         public const double InitPlateT = 10;
         public const double InitUpperSide = 10;
-        public const double InitRightSide = 10;
+        public const double InitRightSide = 20;
         public const double InitLowerSide = 10;
         public const double InitLeftT = 20;
         public const double InitBigCircleT = 100;
-        public const double InitSmallCircleT = 40;
+        public const double InitSmallCircleT = 10;
 
         public const double BigCircleRad = 3d;
         public const double SmallCircleRad = 1d;
@@ -22,7 +22,7 @@ namespace FDMApp
 
         public const double DeltaX = 0.2d;
         public const double DeltaY = 0.2d;
-        public const double DeltaTime = 0.5d;
+        public const double DeltaTime = 0.2d;
         public const double Time = 25d;
 
         public const int ScreenWidth = 400;

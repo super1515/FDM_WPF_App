@@ -48,7 +48,7 @@ namespace FDMApp
             CreateBitmap(ref bitmap, ref nums, min, max);
             FillBlankSpace(ref bitmap);
             PrintToFile(nodes);
-            //ApplyNodes(ref bitmap, ref nodes);
+            ApplyNodes(ref bitmap, ref nodes);
             this.MainImage.Source = BitmapToImageSource(bitmap);
         }
         static void PrintToFile(List<List<Node>> nodes)
@@ -56,9 +56,9 @@ namespace FDMApp
             string path = $"Log{DateTime.Now.Second}.txt";
             string text = "";
             List<List<string>> printNode = new List<List<string>>();
-            for (double y = Config.VerticalLength; y > 0; y -= Config.DeltaY)
+            for (double y = Config.VerticalLength - Config.DeltaY; y > 0; y -= Config.DeltaY)
             {
-                for (double x = 0; x < Config.HorizontaLength; x += Config.DeltaX)
+                for (double x = 0; x < Config.HorizontaLength - Config.DeltaX; x += Config.DeltaX)
                 {
                     Node curNode = nodes.GetNodeWith(x, y);
                     if (Math.Sqrt(Math.Pow(curNode.x - x, 2) + Math.Pow(curNode.y - y, 2)) < Config.DeltaX)
@@ -332,6 +332,7 @@ namespace FDMApp
                     }
                 }
             }
+            nodes.GetNodeWith(0d, 6d).val = Config.InitLeftT;
         }
         static BoundType NodePos(double x, double y)
         {
@@ -350,7 +351,7 @@ namespace FDMApp
                 if (!(y < (Config.VerticalLength - r2) && x < Config.HorizontaLength) && !(x < (Config.HorizontaLength - r2) && y < Config.VerticalLength))
                 {
                     if (Math.Pow((x) - (Config.HorizontaLength - r2), 2) + Math.Pow((y + dy) - (Config.VerticalLength - r2), 2) > Math.Pow(r2, 2)) return BoundType.IsInBigCircle;
-                    if (Math.Pow((x+dx) - (Config.HorizontaLength - r2), 2) + Math.Pow((y) - (Config.VerticalLength - r2), 2) > Math.Pow(r2, 2)) return BoundType.IsInBigCircle;
+                    if (Math.Pow((x + dx) - (Config.HorizontaLength - r2), 2) + Math.Pow((y) - (Config.VerticalLength - r2), 2) > Math.Pow(r2, 2)) return BoundType.IsInBigCircle;
                     return BoundType.Inside;
                 }
             }
