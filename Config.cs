@@ -10,7 +10,7 @@ namespace FDMApp
         public const double InitLowerSide = 10;
         public const double InitLeftT = 20;
         public const double InitBigCircleT = 100;
-        public const double InitSmallCircleT = 10;
+        public const double InitSmallCircleT = 40;
 
         public const double BigCircleRad = 3d;
         public const double SmallCircleRad = 1d;
@@ -18,11 +18,11 @@ namespace FDMApp
         public const double HorizontaLength = 8;
         public const double VerticalLength = 6;
 
-        public const double KVal = 50d;
+        public const double KVal = 1d;
 
         public const double DeltaX = 0.2d;
         public const double DeltaY = 0.2d;
-        public const double DeltaTime = 0.1d;
+        public const double DeltaTime = 0.5d;
         public const double Time = 25d;
 
         public const int ScreenWidth = 400;

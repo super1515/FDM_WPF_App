@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -46,14 +47,40 @@ namespace FDMApp
             }
             CreateBitmap(ref bitmap, ref nums, min, max);
             FillBlankSpace(ref bitmap);
-            ApplyNodes(ref bitmap, ref nodes);
+            PrintToFile(nodes);
+            //ApplyNodes(ref bitmap, ref nodes);
             this.MainImage.Source = BitmapToImageSource(bitmap);
+        }
+        static void PrintToFile(List<List<Node>> nodes)
+        {
+            string path = $"Log{DateTime.Now.Second}.txt";
+            string text = "";
+            List<List<string>> printNode = new List<List<string>>();
+            for (double y = Config.VerticalLength; y > 0; y -= Config.DeltaY)
+            {
+                for (double x = 0; x < Config.HorizontaLength; x += Config.DeltaX)
+                {
+                    Node curNode = nodes.GetNodeWith(x, y);
+                    if (Math.Sqrt(Math.Pow(curNode.x - x, 2) + Math.Pow(curNode.y - y, 2)) < Config.DeltaX)
+                        text += String.Format("{0:f2} ", curNode.val);
+                    else text += "     ";
+
+                }
+                text += "\n";
+            }
+            using (FileStream fstream = new FileStream(path, FileMode.OpenOrCreate))
+            {
+                byte[] input = Encoding.Default.GetBytes(text);
+                fstream.Write(input, 0, input.Length);
+            }
         }
         static void Solve(ref List<List<Node>> nodes)
         {
+            double l = 0;
+            double n = 0;
             double k = Config.KVal;
             double dx = Config.DeltaX; double dy = Config.DeltaY;
-            int nCountX = (int) (Config.HorizontaLength / dx);
+            int nCountX = (int)(Config.HorizontaLength / dx);
             int nCountY = (int)(Config.VerticalLength / dy);
             double dVal = 0; double aVal = 0; double bVal = 0; double cVal = 0;
             double dt = Config.DeltaTime;
@@ -77,27 +104,47 @@ namespace FDMApp
                         x = des.x;
                         y = des.y;
                         count++;
-                        if ((boundNode = nodes.GetNodeWith(x - dx, y)).type > 0)
+                        boundNode = nodes.GetNodeWith(x - dx, y);
+                        n = Math.Abs((boundNode.x - des.x)) / dx;
+                        n = n > 0.99d ? 1d : n;
+                        n = n < 0.99d ? 0d : n;
+                        if (boundNode.type > 0)
                         {
                             boundNode.val = Config.GetBoundaryValue(boundNode, des, dx);
-                            dVal += (dt * k / (dx * dx)) * boundNode.val;
+                            if (n > 0 && n < 1)
+                                dVal += (dt * k * n / (dx * dx * (n * (n + 1)))) * boundNode.val;
+                            else
+                                dVal += (dt * k / (dx * dx)) * boundNode.val;
                             aVal = 0;
                         }
                         else
                         {
-                            aVal = -dt * k / (dx * dx);
+                            if (n > 0 && n < 1)
+                                aVal = -dt * k * n / (dx * dx * (n * (n + 1)));
+                            else
+                                aVal = -dt * k / (dx * dx);
                         }
-                        if ((boundNode = nodes.GetNodeWith(x + dx, y)).type > 0)
+                        boundNode = nodes.GetNodeWith(x + dx, y);
+                        if (boundNode.type > 0)
                         {
                             boundNode.val = Config.GetBoundaryValue(boundNode, des, dx);
-                            dVal += (dt * k / (dx * dx)) * boundNode.val;
+                            if (n > 0 && n < 1)
+                                dVal += (dt * k * n / (dx * dx * (n * (n + 1)))) * boundNode.val;
+                            else
+                                dVal += (dt * k / (dx * dx)) * boundNode.val;
                             cVal = 0;
                         }
                         else
                         {
-                            cVal = -dt * k / (dx * dx);
+                            if (n > 0 && n < 1)
+                                cVal = -dt * k * n / (dx * dx * (n * (n + 1)));
+                            else
+                                cVal = -dt * k / (dy * dx);
                         }
-                        bVal = (2 * dt * k / (dx * dx) + 1);
+                        if (n > 0 && n < 1)
+                            bVal = (2 * dt * k * (n + 1) / (dx * dx * (n * (n + 1))) + 1);
+                        else
+                            bVal = (2 * dt * k / (dx * dx) + 1);
                         a.Add(aVal);
                         b.Add(bVal);
                         c.Add(cVal);
@@ -129,27 +176,47 @@ namespace FDMApp
                         x = des.x;
                         y = des.y;
                         count++;
-                        if ((boundNode = nodes.GetNodeWith(x, y - dy)).type > 0)
+                        boundNode = nodes.GetNodeWith(x, y - dy);
+                        l = Math.Abs((boundNode.y - des.y)) / dy;
+                        l = l > 0.99d ? 1d : l;
+                        l = l < 0.99d ? 0d : l;
+                        if (boundNode.type > 0)
                         {
                             boundNode.val = Config.GetBoundaryValue(boundNode, des, dy);
-                            dVal += (dt * k / (dy * dy)) * boundNode.val;
+                            if (l > 0 && l < 1)
+                                dVal += (dt * k * l / (dy * dy * (l * (l + 1)))) * boundNode.val;
+                            else
+                                dVal += (dt * k / (dy * dy)) * boundNode.val;
                             aVal = 0;
                         }
                         else
                         {
-                            aVal = -dt * k / (dy * dy);
+                            if (l > 0 && l < 1)
+                                aVal = -dt * k * l / (dy * dy * (l * (l + 1)));
+                            else
+                                aVal = -dt * k / (dy * dy);
                         }
-                        if ((boundNode = nodes.GetNodeWith(x, y + dy)).type > 0)
+                        boundNode = nodes.GetNodeWith(x, y + dy);
+                        l = Math.Abs((boundNode.y - des.y)) / dy;
+                        l = l > 0.99d ? 1d : l;
+                        l = l < 0.99d ? 0d : l;
+                        if (boundNode.type > 0)
                         {
                             boundNode.val = Config.GetBoundaryValue(boundNode, des, dy);
-                            dVal += (dt * k / (dy * dy)) * boundNode.val;
+                            if (l > 0 && l < 1)
+                                dVal += (dt * k * l / (dy * dy * (l * (l + 1)))) * boundNode.val;
+                            else
+                                dVal += (dt * k / (dy * dy)) * boundNode.val;
                             cVal = 0;
                         }
                         else
                         {
                             cVal = -dt * k / (dy * dy);
                         }
-                        bVal = (2 * dt * k / (dy * dy) + 1);
+                        if (l > 0 && l < 1)
+                            bVal = (2 * dt * k * (l + 1) / (dy * dy * (l * (l + 1))) + 1);
+                        else
+                            bVal = (2 * dt * k / (dy * dy) + 1);
                         a.Add(aVal);
                         b.Add(bVal);
                         c.Add(cVal);
@@ -208,7 +275,7 @@ namespace FDMApp
                     if (node.type == BoundType.Inside)
                         bitmap.SetPixel((int)(node.x / dx), (int)(node.y / dy), Color.White);
                     if (node.type == BoundType.IsInBigCircle)
-                        bitmap.SetPixel((int)(node.x / dx), (int)(node.y / dy), Color.Red);
+                        bitmap.SetPixel((int)(node.x / dx), (int)(node.y / dy), Color.Black);
                     if (node.type == BoundType.IsInSmallCircle)
                         bitmap.SetPixel((int)(node.x / dx), (int)(node.y / dy), Color.Red);
                     if (node.type == BoundType.InLeftSide)
@@ -266,7 +333,6 @@ namespace FDMApp
                 }
             }
         }
-        /* ЗАХАРДКОЖЕН DX DY*/
         static BoundType NodePos(double x, double y)
         {
             double r1 = Config.SmallCircleRad;
@@ -283,7 +349,8 @@ namespace FDMApp
             {
                 if (!(y < (Config.VerticalLength - r2) && x < Config.HorizontaLength) && !(x < (Config.HorizontaLength - r2) && y < Config.VerticalLength))
                 {
-                    if (Math.Pow((x + dx) - (Config.HorizontaLength - r2), 2) + Math.Pow((y + dy) - (Config.VerticalLength - r2), 2) > Math.Pow(r2, 2)) return BoundType.IsInBigCircle;
+                    if (Math.Pow((x) - (Config.HorizontaLength - r2), 2) + Math.Pow((y + dy) - (Config.VerticalLength - r2), 2) > Math.Pow(r2, 2)) return BoundType.IsInBigCircle;
+                    if (Math.Pow((x+dx) - (Config.HorizontaLength - r2), 2) + Math.Pow((y) - (Config.VerticalLength - r2), 2) > Math.Pow(r2, 2)) return BoundType.IsInBigCircle;
                     return BoundType.Inside;
                 }
             }
@@ -327,11 +394,6 @@ namespace FDMApp
                 {
                     var sorted = nodes1
                         .OrderBy(n => Distance(n, x, y)).Take(3).ToList();
-                    //if (sorted.Count < 3)
-                    //{
-                    //    nums[i, j] = -99999;
-                    //    continue;
-                    //}
                     double d = (sorted[1].y - sorted[2].y) * (sorted[0].x - sorted[2].x) + (sorted[2].x - sorted[1].x) * (sorted[0].y - sorted[2].y);
                     if (NodePos(x, y) < 0 || d == 0) { nums[i, j] = sorted[0].val; continue; }
                     double t1 = ((sorted[1].y - sorted[2].y) * (x - sorted[2].x) + (sorted[2].x - sorted[1].x) * (y - sorted[2].y)) / d;
